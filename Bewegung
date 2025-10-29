@@ -1,0 +1,5 @@
+/**
+ * @brief Utility function to load a texture from a file.
+ * ...
+ */
+SDL_Texture* loadTexture(...) { ... }
