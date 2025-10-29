@@ -1,0 +1,21 @@
+1.Startposition des Spielers anpassen
+
+Ursprünglich: "1 andere die anfangsposition von spieler auf untere ecke links"
+
+    Verbesserte Anweisung: Setze die Startposition des Spielers (oder des "Sprites", wenn du eine visuelle Programmiersprache nutzt) auf die untere linke Ecke des Bildschirms/Spielfelds.
+
+2. Bewegungsbeschränkung für den Spiker
+
+Ursprünglich: "2. Sperre die moglichkeite den spiker nach unten, lins/rechts zu bewegen"
+
+    Verbesserte Anweisung: Deaktiviere oder blockiere die Bewegungen des Spielers (genannt "Spiker" oder "Charakter") nach unten, links und rechts.
+
+        (Annahme: Der Spieler soll sich wahrscheinlich nur nach oben bewegen können, z.B. zum Springen, da es möglicherweise ein vertikales Spiel ist oder die seitliche Bewegung durch andere Mechanismen gesteuert wird.)
+
+3. Implementierung der Schwerkraft/des Fallens
+
+Ursprünglich: "3. Nachdem spieler nach oben spring mit w taste muss ihr den vide programmieren um den wieder nach unten fallen lassen"
+
+    Verbesserte Anweisung: Implementiere die Schwerkraft-Logik: Nach dem Ausführen eines Sprungs (z.B. durch Drücken der W-Taste), muss der Spieler-Charakter automatisch und realistisch wieder nach unten fallen (Rückkehr zum Boden/Ausgangspunkt).
+
+        Dazu ist meist eine Vertikalgeschwindigkeit (velocityY) und eine konstante Beschleunigung (gravity) nötig, die nach dem Sprung wirkt.
