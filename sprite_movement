@@ -1,0 +1,243 @@
+
+
+//png Datei wird animiert und bewegt
+#include <iostream>
+#include <SDL.h>
+#include <SDL_image.h>
+
+// --- Global Pointers ---
+SDL_Window* g_window = nullptr;
+SDL_Renderer* g_renderer = nullptr;
+SDL_Texture* g_spriteTexture = nullptr;
+
+// --- Constants and Data Structure ---
+
+// Define the dimensions of the full sprite sheet and a single frame
+// Full image: 1024x751, divided into 4 columns and 4 rows.
+const int FULL_WIDTH = 1024;
+const int FULL_HEIGHT = 751;
+const int MAX_COLUMNS = 4;
+const int MAX_ROWS = 4;
+const int FRAME_WIDTH = FULL_WIDTH / MAX_COLUMNS;   // 256
+const int FRAME_HEIGHT = FULL_HEIGHT / MAX_ROWS;    // 187
+const int MOVE_SPEED = 5;                           // Pixels to move per key press
+const int ANIMATION_SPEED = 10;                     // Frame update every 10 loop iterations
+
+struct Sprite {
+    // Position and size of the sprite on the window (Destination Rectangle)
+    SDL_Rect destRect = { 100, 100, FRAME_WIDTH, FRAME_HEIGHT };
+
+    // Which frame column/row we are currently displaying (Source location)
+    int currentFrameCol = 0;
+    int currentFrameRow = 0;
+
+    // Animation control
+    int frameCounter = 0;
+};
+
+Sprite g_playerSprite;
+
+// --- Function Prototypes ---
+bool initializeSDL();
+bool loadMedia(const char* path);
+void closeSDL();
+void handleEvents(bool& quit);
+void updateAnimation();
+void render();
+
+// --- Function Implementations ---
+
+/**
+ * @brief Initializes SDL and SDL_image, creates the window and renderer.
+ * @return true on success, false otherwise.
+ */
+bool initializeSDL() {
+    // 1. Initialize SDL Subsystems (Video for windowing)
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        std::cerr << "SDL init error: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    // 2. Initialize SDL_image for PNG loading
+    // We only need PNG support for this example
+    int imgFlags = IMG_INIT_PNG;
+    if (!(IMG_Init(imgFlags) & imgFlags)) {
+        std::cerr << "SDL_image init error: " << IMG_GetError() << std::endl;
+        SDL_Quit();
+        return false;
+    }
+
+    // 3. Create Window
+    g_window = SDL_CreateWindow("WASD Sprite Animator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
+    if (g_window == nullptr) {
+        std::cerr << "Window creation error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
+        return false;
+    }
+
+    // 4. Create Renderer (accelerated and VSync for smooth rendering)
+    g_renderer = SDL_CreateRenderer(g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (g_renderer == nullptr) {
+        std::cerr << "Renderer creation error: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(g_window);
+        SDL_Quit();
+        return false;
+    }
+
+    // Set the window background color to **White** as requested
+    SDL_SetRenderDrawColor(g_renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+    return true;
+}
+
+/**
+ * @brief Loads the sprite sheet into an SDL_Texture.
+ * @param path The file path to the PNG image.
+ * @return true on success, false otherwise.
+ */
+bool loadMedia(const char* path) {
+    // Load image as a Surface
+    SDL_Surface* loadedSurface = IMG_Load(path);
+    if (loadedSurface == nullptr) {
+        std::cerr << "Failed to load image " << path << "! SDL_image Error: " << IMG_GetError() << std::endl;
+        return false;
+    }
+
+    // Convert surface to Texture for hardware acceleration
+    g_spriteTexture = SDL_CreateTextureFromSurface(g_renderer, loadedSurface);
+    if (g_spriteTexture == nullptr) {
+        std::cerr << "Failed to create texture from surface! SDL Error: " << SDL_GetError() << std::endl;
+    }
+
+    // Free the old surface
+    SDL_FreeSurface(loadedSurface);
+
+    return g_spriteTexture != nullptr;
+}
+
+/**
+ * @brief Cleans up all SDL resources.
+ */
+void closeSDL() {
+    SDL_DestroyTexture(g_spriteTexture);
+    SDL_DestroyRenderer(g_renderer);
+    SDL_DestroyWindow(g_window);
+
+    g_spriteTexture = nullptr;
+    g_renderer = nullptr;
+    g_window = nullptr;
+
+    IMG_Quit();
+    SDL_Quit();
+}
+
+/**
+ * @brief Handles user input (WASD movement and quitting).
+ * @param quit Reference to the main loop flag.
+ */
+void handleEvents(bool& quit) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e) != 0) {
+        if (e.type == SDL_QUIT) {
+            quit = true;
+        }
+
+        // Handle Key Presses
+        if (e.type == SDL_KEYDOWN) {
+            switch (e.key.keysym.sym) {
+            case SDLK_w:
+                g_playerSprite.destRect.y -= MOVE_SPEED;
+                g_playerSprite.currentFrameRow = 0; // Row 0: Up
+                break;
+            case SDLK_s:
+                g_playerSprite.destRect.y += MOVE_SPEED;
+                g_playerSprite.currentFrameRow = 1; // Row 1: Down
+                break;
+            case SDLK_a:
+                g_playerSprite.destRect.x -= MOVE_SPEED;
+                g_playerSprite.currentFrameRow = 2; // Row 2: Left
+                break;
+            case SDLK_d:
+                g_playerSprite.destRect.x += MOVE_SPEED;
+                g_playerSprite.currentFrameRow = 3; // Row 3: Right
+                break;
+            case SDLK_ESCAPE:
+                quit = true;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Updates the sprite's current animation frame (column index).
+ */
+void updateAnimation() {
+    g_playerSprite.frameCounter++;
+
+    if (g_playerSprite.frameCounter >= ANIMATION_SPEED) {
+        g_playerSprite.currentFrameCol++;
+
+        // Loop animation when the end of the column count is reached
+        if (g_playerSprite.currentFrameCol >= MAX_COLUMNS) {
+            g_playerSprite.currentFrameCol = 0;
+        }
+
+        g_playerSprite.frameCounter = 0; // Reset the frame timer
+    }
+}
+
+/**
+ * @brief Clears the screen and draws the current sprite frame.
+ */
+void render() {
+    // 1. Clear the screen (fills with the white draw color)
+    SDL_RenderClear(g_renderer);
+
+    // 2. Define the Source Rectangle (what part of the PNG to draw)
+    SDL_Rect srcRect = {
+        g_playerSprite.currentFrameCol * FRAME_WIDTH,
+        g_playerSprite.currentFrameRow * FRAME_HEIGHT,
+        FRAME_WIDTH,
+        FRAME_HEIGHT
+    };
+
+    // 3. Draw the current frame onto the window (Destination Rectangle)
+    SDL_RenderCopy(g_renderer, g_spriteTexture, &srcRect, &g_playerSprite.destRect);
+
+    // 4. Update the screen
+    SDL_RenderPresent(g_renderer);
+}
+
+// --- Main Program Entry Point ---
+int main(int argc, char* args[]) {
+    // !!! IMPORTANT: CHANGE THIS PATH !!!
+    const char* SPRITE_PATH = "sprite.png";
+
+    if (!initializeSDL() || !loadMedia(SPRITE_PATH)) {
+        std::cerr << "Application startup failed. Check file path and library linking." << std::endl;
+        closeSDL();
+        return 1;
+    }
+
+    bool quit = false;
+
+    // Main Game Loop
+    while (!quit) {
+        // Process events (input)
+        handleEvents(quit);
+
+        // Update game logic (animation frame)
+        updateAnimation();
+
+        // Render graphics
+        render();
+
+        // SDL_RenderPresent handles VSync if enabled, otherwise you might need SDL_Delay(16)
+    }
+
+    closeSDL();
+    return 0;
+}
