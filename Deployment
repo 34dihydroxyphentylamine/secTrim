@@ -1,0 +1,68 @@
+https://marketplace.visualstudio.com/items?itemName=VisualStudioClient.MicrosoftVisualStudio2017InstallerProjects
+
+
+Schritt 1: Visual Studio Installer Project Extension installieren
+
+Dieser Schritt bleibt unverändert, da die Erweiterung zuerst benötigt wird:
+
+    Schließe alle geöffneten Instanzen von Visual Studio 2022.
+
+    Öffne den Visual Studio Installer.
+
+    Suche deine Visual Studio 2022 Installation und klicke auf „Ändern“.
+
+    Wechsle zur Registerkarte „Einzelne Komponenten“.
+
+    Gib im Suchfeld Installer ein.
+
+    Aktiviere das Kontrollkästchen für „Microsoft Visual Studio Installer Project 2022“.
+
+    Klicke auf „Ändern“, um die Komponente zu installieren.
+
+Schritt 2: C++-Quellprojekt erstellen (Voraussetzung)
+
+Dies ist das C++-Projekt, das du deployen möchtest. Das Video verwendet hier eine Windows-Desktopanwendung.
+
+    Öffne Visual Studio und erstelle ein neues Projekt.
+
+    Wähle als Sprache C++.
+
+    Wähle die Vorlage „Windows-Desktopanwendung“ (oder deine spezifische C++-Anwendung).
+
+    Konfiguriere und erstelle dein C++-Projekt (z. B. CPPD_App).
+
+Schritt 3: Setup-Projekt zur Lösung hinzufügen
+
+Jetzt fügst du das Installer-Projekt zur bestehenden Projektmappe hinzu, die dein C++-Projekt enthält:
+
+    Klicke im Projektmappen-Explorer mit der rechten Maustaste auf die Projektmappe (die oberste Ebene).
+
+    Wähle Hinzufügen -> Neues Projekt.
+
+    Gib im Suchfeld Setup ein.
+
+    Wähle das Projekt „Setup Project“ aus den Vorlagen aus.
+
+    Gib dem neuen Projekt einen passenden Namen (z. B. Installer_MeineApp) und klicke auf „Erstellen“.
+
+Schritt 4: Projektausgabe hinzufügen
+
+Du verknüpfst das Setup-Projekt mit deiner C++-Anwendung:
+
+    Das Setup-Projekt öffnet die Dateisystemansicht.
+
+    Klicke mit der rechten Maustaste auf den Ordner „Application Folder“.
+
+    Wähle Hinzufügen -> Projektausgabe... (Project Output).
+
+    Wähle im Dialogfeld dein C++-Projekt (CPPD_App) aus und stelle sicher, dass „Primary Output“ (Primäre Ausgabe) markiert ist.
+
+    Klicke auf OK.
+
+Schritt 5: Setup-Projekt erstellen (Build) und Installieren
+
+    Klicke im Projektmappen-Explorer mit der rechten Maustaste auf dein Setup-Projekt (Installer_MeineApp).
+
+    Wähle Erstellen (Build), um die Installationsdateien zu generieren.
+
+    (Optionaler Test): Klicke erneut mit der rechten Maustaste auf das Setup-Projekt und wähle Installieren, um den generierten Installer zu testen.
